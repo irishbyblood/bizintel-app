@@ -1,0 +1,108 @@
+```python
+import streamlit as st
+
+# --- CONFIGURATION ---
+STRIPE_URL = "https://buy.stripe.com/YOUR_LINK_HERE"  # <--- PASTE YOUR STRIPE LINK HERE
+ACCESS_CODE = "GROWTH24"  # The code you send users after they pay
+
+st.set_page_config(page_title="BizIntel Pro", page_icon="📈", layout="centered")
+
+# --- CSS FOR UI ---
+st.markdown("""
+    <style>
+    .insight-card { background-color: #f0f2f6; padding: 20px; border-radius: 10px; border-left: 5px solid #ff4b4b; margin-bottom: 20px; }
+    .title-text { font-size: 24px; font-weight: bold; color: #0e1117; }
+    .blur { filter: blur(5px); user-select: none; opacity: 0.6; }
+    .paywall-box { border: 2px solid #ff4b4b; padding: 30px; border-radius: 15px; text-align: center; background-color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- SESSION STATE (Keeps user logged in during session) ---
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+
+# --- DATA (The Insights) ---
+insights = [
+    {"id": 1, "title": "The 'Implementation Era' of GenAI", "summary": "Shifting from chatbots to core workflow integration.", "why": "Investors demand ROI. Novelty is over.", "tip": "Mandate AI for top 20% of repetitive tasks."},
+    {"id": 2, "title": "The Return of 'Profitable Growth'", "summary": "Growth at all costs is dead; cash flow is king.", "why": "Cheap capital is gone.", "tip": "Cut channels with >3 month payback."},
+    {"id": 3, "title": "Rise of 'Dark Social'", "summary": "B2B buying happens in private Slack/Discord groups.", "why": "Attribution software fails here.", "tip": "Create PDF assets for group chats."},
+    {"id": 4, "title": "Skills Over Degrees", "summary": "Portfolios are replacing 4-year degrees.", "why": "Degrees don't predict success in AI/Tech.", "tip": "Use paid practical tests instead of degree filters."},
+    {"id": 5, "title": "Niche Media Fragmentation", "summary": "Micro-influencers outperform mass ads.", "why": "Trust in broad media is low.", "tip": "Sponsor 5 newsletters with <50k subs."}
+]
+
+# --- SIDEBAR (Login System) ---
+with st.sidebar:
+    st.title("📈 BizIntel Pro")
+    
+    if not st.session_state.authenticated:
+        st.warning("🔒 Free Mode Active")
+        st.write("Unlock all 5 insights.")
+        passcode_input = st.text_input("Enter Access Code:", type="password")
+        
+        if st.button("Login"):
+            if passcode_input == ACCESS_CODE:
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("Invalid Code.")
+        
+        st.divider()
+        st.markdown(f"**Don't have a code?**")
+        st.link_button("👉 Get Access ($9/mo)", STRIPE_URL)
+    else:
+        st.success("🔓 Premium Active")
+        if st.button("Logout"):
+            st.session_state.authenticated = False
+            st.rerun()
+
+# --- MAIN FEED ---
+st.title("Executive Briefing")
+
+# Helper function to show card
+def draw_card(i):
+    st.markdown(f"""
+    <div class="insight-card">
+        <div class="title-text">{i['id']}. {i['title']}</div>
+        <p><em>{i['summary']}</em></p>
+        <p><strong>Why:</strong> {i['why']}</p>
+        <p><strong>👉 Tip:</strong> {i['tip']}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Helper function for blurred card
+def draw_blur(i):
+    st.markdown(f"""
+    <div class="insight-card blur">
+        <div class="title-text">{i['id']}. {i['title']}</div>
+        <p>This content is reserved for premium subscribers.</p>
+        <p>This content is reserved for premium subscribers.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# 1. ALWAYS SHOW FREE INSIGHT
+draw_card(insights[0])
+
+# 2. SHOW REMAINING (Either Locked or Unlocked)
+if st.session_state.authenticated:
+    for item in insights[1:]:
+        draw_card(item)
+else:
+    # Show blur teaser for the second one
+    draw_blur(insights[1])
+    
+    # HARD PAYWALL
+    st.markdown("---")
+    st.markdown(f"""
+    <div class="paywall-box">
+        <h2>🔒 Unlock the Remaining 4 Insights</h2>
+        <p>Join smart executives focused on <strong>Profitability, Hiring, and Dark Social</strong>.</p>
+        <a href="{STRIPE_URL}" target="_blank">
+            <button style="background-color:#ff4b4b; color:white; padding:12px 24px; font-size:18px; border:none; border-radius:5px; cursor:pointer;">
+                Subscribe to Unlock ($9)
+            </button>
+        </a>
+        <br><br>
+        <small>Already have a code? Enter it in the sidebar.</small>
+    </div>
+    """, unsafe_allow_html=True)
+```
